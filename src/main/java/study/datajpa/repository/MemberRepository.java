@@ -23,8 +23,20 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     /**
      * 실무에서 많이 씀
+     *
+     * 조금 복잡해지면 Query를 직접 정의해서 쓰고 메소드명을 심플하게 가져가자.
+     * 동적 쿼리는 QueryDsl을 쓰자
      */
     @Query("select m from Member m where m.username = :username and m.age = :age")
     List<Member> findUser(@Param("username") String username, @Param("age") int age);
+
+    /**
+     * Query를 통해서 값이나 DTO를 조회하는 방법
+     */
+
+
+
+
+
 
 }

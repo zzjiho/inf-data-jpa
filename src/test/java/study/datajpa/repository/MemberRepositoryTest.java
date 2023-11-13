@@ -47,7 +47,7 @@ class MemberRepositoryTest {
 
         //단건 조회 검증
         Member findMember1 = memberRepository.findById(member1.getId()).get();
-        Member findMember2 = memberRepository.findById(member2.getId()).get();
+        Member findMember2 = memberRepository.findById(member2.getId()).get(); //xvbxvbc
         assertThat(findMember1).isEqualTo(member1);
         assertThat(findMember2).isEqualTo(member2);
 
@@ -74,6 +74,19 @@ class MemberRepositoryTest {
     @Test
     public void findTop3HelloBy() throws Exception {
         List<Member> top3HelloBy = memberRepository.findTop3HelloBy();
+    }
+
+    @Test
+    public void testQuery() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findUser("AAA", 10);
+        assertThat(result.get(0)).isEqualTo(m1);  //result.get(0)의 뜻은 첫번째 데이터를 가져온다는 뜻이다.
+
+
     }
 
 
