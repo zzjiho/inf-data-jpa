@@ -6,8 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
+import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
+import study.datajpa.entity.Team;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +24,9 @@ class MemberRepositoryTest {
 
     @Autowired
     MemberRepository memberRepository;
+
+    @Autowired
+    TeamRepository teamRepository;
 
     @Test
     public void testMember() throws Exception {
@@ -85,14 +91,72 @@ class MemberRepositoryTest {
 
         List<Member> result = memberRepository.findUser("AAA", 10);
         assertThat(result.get(0)).isEqualTo(m1);  //result.get(0)의 뜻은 첫번째 데이터를 가져온다는 뜻이다.
+    }
+
+    @Test
+    public void findUsernameList() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> usernameList = memberRepository.findUsernameList();
+        for (String s : usernameList) {
+            System.out.println("s = " + s);
+        }
+    }
+
+    @Test
+    public void findMemberDto() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        memberRepository.save(m1);
+
+        Team team = new Team("teamA");
+        m1.setTeam(team);
+        teamRepository.save(team);
+
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+        for (MemberDto dto : memberDto) {
+            System.out.println("dto = " + dto);
+        }
+    }
+
+    @Test
+    public void findByNames() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findByNames(Arrays.asList("AAA", "BBB"));
+        for (Member member : result) {
+            System.out.println("member = " + member);
+        }
+    }
+
+    @Test
+    public void returnType() throws Exception {
+        Member m1 = new Member("AAA", 10);
+        Member m2 = new Member("BBB", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+
+        //List는 null이없다. Empty Collection 으로 반환을 해준다.
+        //그래서 result != null 이런거 안좋은 코드다. 내 얘기를 하는듯.ㅠ
+        //list는 그냥 받으면 된다.
+        List<Member> result = memberRepository.findListByUsername("AasdfAA");
+        System.out.println("result.size() = " + result.size());
+
+        //단건인 경우는 null이 나온다.
+        Member member = memberRepository.findMemberByUsername("AAA");
+
+        //내가 DB에서 조회했는데 데이터가 있을수도있고 없을수도 있다 = Optional 을 쓰자.
+        //근데 결과가 2개이상이면 예외가 터진다.
+        Optional<Member> aaa = memberRepository.findOptionalByUsername("AAA");
 
 
     }
-
-
-
-
-
 
 
 

@@ -1,22 +1,17 @@
 package study.datajpa.dto;
 
-import com.querydsl.core.annotations.QueryProjection;
 import lombok.Data;
-import study.datajpa.entity.Team;
 
-@Data
+@Data //dto에는 @Data 쓰지말자
 public class MemberDto {
 
     private Long id;
     private String username;
-    private int age;
-    private Team team;
+    private String teamName;
 
-    @QueryProjection
-    public MemberDto(Long id, String username, int age, Team team) {
+    public MemberDto(Long id, String username, String teamName) {
         this.id = id;
         this.username = username;
-        this.age = age;
-        this.team = team;
+        this.teamName = teamName;
     }
 }
