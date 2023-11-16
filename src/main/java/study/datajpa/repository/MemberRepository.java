@@ -2,6 +2,7 @@ package study.datajpa.repository;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -83,11 +84,24 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
     int bulkAgePlus(@Param("age") int age);
 
+    /**
+     * fetch join을 쓰려면 무조건 JPQL을 써야한다.
+     * 귀찮다. spring data jpa에서는 entity graph 라는걸로 쿼리메소드 사용을해도 fetch join도 사용할 수 있다.
+     * 간단한건 밑에처럼 쓰고 복잡하면 그냥 jpql에서 fetch join 쓰면 됨
+     */
     @Query("select m from Member m left join fetch m.team")
     List<Member> findMemberFetchJoin();
 
+    @Override
+    @EntityGraph(attributePaths = {"team"}) //결과적으로 내부에서 fetch join을 쓰는거다
+    List<Member> findAll();
 
+    @EntityGraph
+    @Query("select m from Member m") //jpql에다가도 쓸 수 있음
+    List<Member> findMemberEntityGraph();
 
+    @EntityGraph(attributePaths = {"team"}) //쿼리메소드에다가 쓸 수 있음
+    List<Member> findEntityGraphByUsername(@Param("username") String username);
 
 
 

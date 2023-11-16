@@ -238,7 +238,10 @@ class MemberRepositoryTest {
          * 조인을 하고 추가로 select절에 그 데이터를 다 넣어줌
          * member.team 이런걸 객체 그래프라고 그러는데 이런걸 조인해서 한번에 다 가져옴
          */
-        List<Member> members = memberRepository.findMemberFetchJoin();
+//        List<Member> members = memberRepository.findMemberFetchJoin();
+
+        List<Member> members = memberRepository.findAll();
+
 
         for (Member member : members) {
             System.out.println("member = " + member.getUsername());
@@ -248,6 +251,23 @@ class MemberRepositoryTest {
 
         // then
     }
+
+    @Test
+    public void queryHint() throws Exception {
+
+        //given
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush(); // JPA안에 영속성 컨텍스트 내부에는 1차캐시가 존재하는데 여기 있는 결과를 DB에 동기화 함.
+        em.clear(); // clear 를 해줘야 영속성 컨텍스트가 날라감. 그래서 그다음부터 1차캐시가 없기 때문에 DB에서 가져옴
+
+        //when
+
+
+
+    }
+
+
 
 
 
