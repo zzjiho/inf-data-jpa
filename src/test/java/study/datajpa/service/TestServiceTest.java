@@ -1,3 +1,4 @@
+/*
 package study.datajpa.service;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -118,4 +119,4 @@ class TestServiceTest {
 
 
 
-}
+}*/

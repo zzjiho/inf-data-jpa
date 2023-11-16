@@ -52,4 +52,42 @@ public class MemberJpaRepository {
                 .getResultList();
     }
 
+    /**
+     * 순수 JPA 페이징
+     */
+    public List<Member> findByPage(int age, int offset, int limit) {
+        return em.createQuery("select m from Member m where m.age = :age order by m.username desc")
+                .setParameter("age", age)
+                .setFirstResult(offset) //몇번째부터 시작할지
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    /**
+     * 페이징에 필요한 total cnt
+     */
+    public long totalCount(int age) {
+        return em.createQuery("select count(m) from Member m where m.age = :age", Long.class)
+                .setParameter("age", age)
+                .getSingleResult(); //단건
+    }
+
+    /**
+     * 벌크성 업데이트 쿼리
+     */
+    public int bulkAgePlus(int age) {
+        return em.createQuery("update Member m set m.age = m.age + 1 where m.age >= :age")
+                .setParameter("age", age)
+                .executeUpdate();
+    }
+
+
+
+
+
+
+
+
+
+
 }

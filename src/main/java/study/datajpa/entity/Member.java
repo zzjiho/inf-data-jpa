@@ -16,6 +16,7 @@ public class Member {
     private String username;
     private int age;
 
+    //지연로딩 : Member조회할때 Team은 가짜 객체로 조회를 해놓고 실제 Team의 어떤 데이터를 사용하는 시점에 Team을 꺼내기 위한 쿼리가 별도로 날라감
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;

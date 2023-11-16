@@ -1,6 +1,9 @@
 package study.datajpa.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import study.datajpa.dto.MemberDto;
@@ -57,6 +60,35 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findListByUsername(String username); //컬렉션
     Member findMemberByUsername(String username); //단건
     Optional<Member> findOptionalByUsername(String username); //단건 Optional
+
+    /**
+     * spring data jap의 페이징
+     *
+     * 실무에서 쿼리가 복잡해지면 카운트 쿼리도 그대로 복잡해지므로 성능이 안나온다.
+     * 그래서 이렇게 따로 구해줘야 한다
+     */
+//    Page<Member> findByAge(int age, Pageable pageable); //반환타입이 Page이면 total count 쿼리까지 같이 날려준다.
+
+    @Query(value = "select m from Member m left join m.team t",
+            countQuery = "select count(m) from Member m")
+    Page<Member> findByAge(int age, Pageable pageable);
+
+    /**
+     * 벌크성 업데이트
+     *
+     * clearAutomatically = true 옵션을 줘서
+     * 벌크 연산 이후에는 영속성 컨텍스트를 다 날려줘야한다. 왜냐하면 벌크 연산은 영속성 컨텍스트를 무시하고 바로 DB에 쿼리를 날리기 때문.
+     */
+    @Modifying(clearAutomatically = true) //뭐 변경할때 넣어줘야함
+    @Query("update Member m set m.age = m.age + 1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
+
+    @Query("select m from Member m left join fetch m.team")
+    List<Member> findMemberFetchJoin();
+
+
+
+
 
 
 

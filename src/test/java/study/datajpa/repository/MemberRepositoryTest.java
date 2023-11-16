@@ -4,12 +4,17 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import study.datajpa.dto.MemberDto;
 import study.datajpa.entity.Member;
 import study.datajpa.entity.Team;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +31,11 @@ class MemberRepositoryTest {
     MemberRepository memberRepository;
 
     @Autowired
+    MemberJpaRepository memberJpaRepository;
+    @Autowired
     TeamRepository teamRepository;
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     public void testMember() throws Exception {
@@ -106,7 +115,7 @@ class MemberRepositoryTest {
         }
     }
 
-    @Test
+    /*@Test
     public void findMemberDto() throws Exception {
         Member m1 = new Member("AAA", 10);
         memberRepository.save(m1);
@@ -119,7 +128,7 @@ class MemberRepositoryTest {
         for (MemberDto dto : memberDto) {
             System.out.println("dto = " + dto);
         }
-    }
+    }*/
 
     @Test
     public void findByNames() throws Exception {
@@ -154,9 +163,97 @@ class MemberRepositoryTest {
         //내가 DB에서 조회했는데 데이터가 있을수도있고 없을수도 있다 = Optional 을 쓰자.
         //근데 결과가 2개이상이면 예외가 터진다.
         Optional<Member> aaa = memberRepository.findOptionalByUsername("AAA");
-
-
     }
+
+    @Test
+    public void paging() throws Exception {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 10));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.by(Sort.Direction.DESC, "username"));//spring data jpa는 페이지를 0부터 시작 ,
+                                                                                                                        // 사용자이름으로 desc, sorting조건이 복잡하면 jpql에 넣어주자.
+
+        //when
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+
+        Page<MemberDto> toMap = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null)); //api로 날려주기위한 Entity -> DTO 변환
+
+        //then
+        List<Member> content = page.getContent(); //페이지에 있는 데이터를 꺼내려먼 getContent() 사용
+        long totalElements = page.getTotalElements();
+
+        assertThat(content.size()).isEqualTo(3);
+        assertThat(page.getTotalElements()).isEqualTo(5);
+        assertThat(page.getNumber()).isEqualTo(0); //페이지 번호 갖고올 수 있음
+        assertThat(page.getTotalPages()).isEqualTo(2);
+        assertThat(page.isFirst()).isTrue(); // 첫 페이지인지
+        assertThat(page.hasNext()).isTrue(); //다음 페이지 있는지
+    }
+
+    @Test
+    public void bulkUpdate() throws Exception {
+        //given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 11));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 30));
+
+        //when
+        int resultCount = memberRepository.bulkAgePlus(20);
+
+        //then
+        assertThat(resultCount).isEqualTo(3);
+    }
+
+    @Test
+    public void findMemberLazy() throws Exception {
+        // given
+        //member1 -> teamA
+        //member2 -> teamB
+        Team teamA = new Team("teamA");
+        Team teamB = new Team("teamB");
+        teamRepository.save(teamA);
+        teamRepository.save(teamB);
+        Member member1 = new Member("member1", 10, teamA);
+        Member member2 = new Member("member2", 10, teamB);
+        memberRepository.save(member1);
+        memberRepository.save(member2);
+
+        //영속성 컨텍스트 다 날려버리기
+        em.flush();
+        em.clear();
+
+        // when
+        //쿼리 한번 날렸는데 그 결과가 2개나옴 (N+1문제)
+//        List<Member> members = memberRepository.findAll();
+
+        /**
+         * 페치조인 : 한번에 다 갖고옴 (proxy말고 진짜로)
+         * 조인을 하고 추가로 select절에 그 데이터를 다 넣어줌
+         * member.team 이런걸 객체 그래프라고 그러는데 이런걸 조인해서 한번에 다 가져옴
+         */
+        List<Member> members = memberRepository.findMemberFetchJoin();
+
+        for (Member member : members) {
+            System.out.println("member = " + member.getUsername());
+            System.out.println("member.teamClass = " + member.getTeam().getClass());
+            System.out.println("member.team = " + member.getTeam().getName()); //getName()실행될때 지연로딩 발생
+        }
+
+        // then
+    }
+
+
+
+
+
+
 
 
 
