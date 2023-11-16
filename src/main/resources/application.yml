@@ -1,3 +1,6 @@
+server:
+  port: 9001
+
 spring:
   datasource:
       driverClassName: com.mysql.jdbc.Driver
@@ -7,7 +10,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
       hibernate:
 #        show_sql: true 쿼리를 다 남기기때문에 로그파일에 남기는게 좋다

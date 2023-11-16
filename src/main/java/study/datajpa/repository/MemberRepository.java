@@ -41,8 +41,8 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 
     //DTO를 조회해서 쓰려면 이렇게 객체 생성해서 반환하는 것 같은 문법이다.
     //jpql이 제공하는 DTO로 반환하는 문법이다.
-    @Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
-    List<MemberDto> findMemberDto();
+    /*@Query("select new study.datajpa.dto.MemberDto(m.id, m.username, t.name) from Member m join m.team t")
+    List<MemberDto> findMemberDto();*/
 
     /**
      * in절로 여러개를 조회하고 싶을때 많이 쓰는 기능 (파라미터 바인딩)
